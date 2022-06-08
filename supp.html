@@ -1,0 +1,388 @@
+<!Doctype html>
+<html lang="en">
+    <head>
+        <title>3D-Aware Video Generation</title>
+
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="author" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="icon" type="image/png" href="data/bunny.png"/>
+
+        <link rel="stylesheet" type="text/css" href="style.css">
+        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+        <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+        <script src="https://unpkg.com/@glidejs/glide"></script>
+        <style type="text/css">
+            .side-text {
+                width:60%;
+                display:inline-block;
+                vertical-align:top;
+            }
+            .side-image {
+                width: 38%;
+                display: inline-block;
+                vertical-align: top;
+            }
+            .controls {
+                margin-bottom: 10px;
+            }
+            .left-controls {
+                display: inline-block;
+                vertical-align: top;
+                width: 80%;
+            }
+            .right-controls {
+                display: inline-block;
+                vertical-align: top;
+                width: 19%;
+                text-align: right;
+            }
+            .render_window {
+                display: inline-block;
+                vertical-align: middle;
+                box-shadow: 1px 0px 5px black;
+                margin-right: 10px;
+                margin-bottom: 10px;
+                width: calc(33% - 10px);
+            }
+            .progress {
+                background: #666;
+                position: relative;
+                height: 5px;
+                margin-bottom: -5px;
+                display: none;
+            }
+            .glide__slide:hover {cursor: grab;}
+            .glide__slide:active {cursor: grabbing;}
+            .glide__slide img {width: 90%;}
+            .glide__bullets {
+                text-align: center;
+            }
+            .glide__bullet--active {
+                color: #aaa; 
+            }
+
+            @media (max-width: 400px) {
+                .render_window {
+                    display: block;
+                    width: 90%;
+                    margin: 10px auto;
+                }
+            }
+            @media (max-width: 700px) {
+                .side-image {
+                    display: block;
+                    width: 80%;
+                    margin: 10px auto;
+                }
+                .side-text {
+                    display: block;
+                    width: 100%;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="section">
+            <h1 class="project-title">
+                3D-Aware Video Generation
+            </h1>
+
+                <div class="authors">
+                    <a href=https://sherwinbahmani.github.io/>
+                        Sherwin Bahmani <sup>1</sup>
+                    </a>
+                    <a href=https://jjparkcv.github.io/>
+                        Jeong Joon Park <sup>2</sup>
+                    </a>
+                    <a href=https://paschalidoud.github.io/>
+                        Despoina Paschalidou <sup>2</sup>
+                    </a>
+                    <a href=https://scholar.google.com/citations?user=9zJkeEMAAAAJ&hl=en/>
+                        Hao Tang <sup>1</sup>
+                    </a>
+                    <a href=https://stanford.edu/~gordonwz//>
+                        Gordon Wetzstein <sup>2</sup>
+                    </a>
+                    <a href=https://geometry.stanford.edu/member/guibas//>
+                        Leonidas Guibas <sup>2</sup>
+                    </a>
+                    <a href=https://ee.ethz.ch/the-department/faculty/professors/person-detail.OTAyMzM=.TGlzdC80MTEsMTA1ODA0MjU5.html/>
+                        Luc Van Gool <sup>1,3</sup>
+                    </a>
+                    <a href=https://ee.ethz.ch/the-department/people-a-z/person-detail.MjAxNjc4.TGlzdC8zMjc5LC0xNjUwNTg5ODIw.html/>
+                        Radu Timofte <sup>1</sup>
+                    </a>
+                </div>
+    
+                <div class="affiliations">
+                    <span><sup>1</sup> ETH Zürich </span>
+                    <span><sup>2</sup> Stanford University </span>
+                    <span><sup>3</sup> KU Leuven </span>
+                </div>
+    
+                <div class="project-conference">
+                    arXiv 2022
+                </div>
+    
+                <div class="project-icons">
+                    <a href="https://arxiv.org/">
+                        <i class="fa fa-file"></i> <br/>
+                        Paper
+                    </a>
+                    <a href="https://github.com/">
+                        <i class="fa fa-github"></i> <br/>
+                        Code
+                    </a>
+                </div>
+            
+                <div class="teaser-image">
+                    <video autoplay loop controls muted style="width:calc(70% - 10px); float: none;">
+                        <source src="Videos/faceforensics/pre_trained/rotation_camera_uv_steps_16_fov_orig_trunc_1.0_split.mp4" type="video/mp4">
+                    </video>
+                </div>
+                <div class="section-title">Abstract</div>
+                    <div class="content">Generative models have emerged as an essential building block for many image synthesis and editing tasks. Recent advances in this field have also enabled high-quality 3D or video content to be generated that exhibits either multi-view or temporal consistency. With our work, we explore 4D generative adversarial networks (GANs) that learn unconditional generation of 3D-aware videos. By combining neural implicit representations with time-aware discriminator, we develop a GAN framework that synthesizes 3D video supervised only with monocular videos. We show that our method learns a rich embedding of decomposable 3D structures and motions that enables new visual effects of spatio-temporal renderings while producing imagery with quality comparable to that of existing 3D or video GANs.
+                    </div>
+            
+            <div class="section-title">Method</div>
+            <div class="content">
+                <img src="Images/method.png">
+                <p>The two main components of our 4D GAN framework are a time-conditioned neural scene generator and a time-aware discriminator. Our generator networks take as input two independent noise vectors, \(\bf{m}\) and \(\bf{z}\), that respectively modulate the motion and the content of the 4D fields. To render an image at a specific time step \({t}\), we sample the camera extrinsics according to dataset-dependent distribution and conduct volume rendering through the time-conditioned radiance and density fields. Our time-aware discriminator measures the realism of a pair of frames, given their time difference, to promote plausible 3D video generation.</p>
+                       
+
+            <div class="section-title">Results on FaceForensics Dataset</div>
+
+            <div class="video-section">
+            <video autoplay loop controls muted style="width:calc(90% - 10px); float: none;">
+                <source src="Videos/faceforensics/vanilla/front_steps_16_fov_orig_trunc_1.0.mp4" type="video/mp4">
+            </video>
+            <div class="video-caption" style="width:100%;">
+                Ours with Forward-Facing Camera
+            </div>
+            </div>
+
+            <div class="video-section">
+            <video autoplay loop controls muted style="width:calc(90% - 10px); float: none;">
+                <source src="Videos/faceforensics/vanilla/front_zoom_steps_16_fov_orig_trunc_1.0.mp4" type="video/mp4">
+            </video>
+            <div class="video-caption" style="width:100%;">
+                Ours with Forward-Facing Camera and Zoom Effect
+            </div>
+            </div>
+
+            <div class="video-section">
+            <video autoplay loop controls muted style="width:calc(90% - 10px); float: none;">
+                <source src="Videos/faceforensics/vanilla/rotation_camera_u_steps_16_fov_orig_trunc_1.0.mp4" type="video/mp4">
+            </video>
+            <div class="video-caption" style="width:100%;">
+                Ours with Rotating Camera
+            </div>
+            </div>
+            
+            <div class="video-section">
+            <video autoplay loop controls muted style="width:calc(90% - 10px); float: none;">
+                <source src="Videos/faceforensics/vanilla/motion_content_front_steps_16_fov_orig_trunc_1.0.mp4" type="video/mp4">
+            </video>
+            <div class="video-caption" style="width:100%;">
+                Ours with Motion and Content Decomposition
+                <br> (random motions applied to each identity)
+            </div>
+            </div>
+
+            <div class="video-section">
+            <video autoplay loop controls muted style="width:calc(90% - 10px); float: none;">
+                <source src="Videos/faceforensics/pre_trained/front_steps_16_fov_orig_trunc_1.0.mp4" type="video/mp4">
+            </video>
+            <div class="video-caption" style="width:100%;">
+                Ours pre-trained on FFHQ with Forward-Facing Camera
+            </div>
+            </div>
+
+            <div class="video-section">
+            <video autoplay loop controls muted style="width:calc(90% - 10px); float: none;">
+                <source src="Videos/faceforensics/pre_trained/rotation_camera_uv_steps_16_fov_orig_trunc_1.0.mp4" type="video/mp4">
+            </video>
+            <div class="video-caption" style="width:100%;">
+                Ours pre-trained on FFHQ with Rotating Camera along Two Axes
+            </div>
+            </div>
+
+
+            <div class="video-section">
+            <video autoplay loop controls muted style="width:calc(90% - 10px); float: none;">
+                <source src="Videos/faceforensics/pre_trained/motion_content_front_steps_16_fov_orig_trunc_1.0.mp4" type="video/mp4">
+            </video>
+            <div class="video-caption" style="width:100%;">
+                Ours pre-trained on FFHQ with Motion and Content Decomposition
+                <br> (two same motions applied to 4 identities)
+            </div>
+            </div>
+
+            <div class="video-section">
+            <video autoplay loop controls muted style="width:calc(90% - 10px); float: none;">
+                <source src="Videos/faceforensics/mocogan-hd/mocogan-hd_faceforensics.mp4" type="video/mp4">
+            </video>
+            <div class="video-caption" style="width:100%;">
+                Samples Generated with MoCoGAN-HD
+            </div>
+            </div>
+
+            <div class="video-section">
+            <video autoplay loop controls muted style="width:calc(90% - 10px); float: none;">
+                <source src="Videos/faceforensics/digan/digan_faceforensics.mp4" type="video/mp4">
+            </video>
+            <div class="video-caption" style="width:100%;">
+                Samples Generated with DIGAN
+            </div>
+            </div>
+
+            <div class="video-section">
+            <video autoplay loop controls muted style="width:calc(90% - 10px); float: none;">
+                <source src="Videos/faceforensics/styleganv/styleganv_faceforensics.mp4" type="video/mp4">
+            </video>
+            <div class="video-caption" style="width:100%;">
+                Samples Generated with StyleGAN-V
+            </div>
+            </div>
+
+
+            <div class="section-title">Results on MEAD Dataset</div>
+            <div class="video-section">
+            <video autoplay loop controls muted style="width:calc(90% - 10px); float: none;">
+                <source src="Videos/mead/vanilla/front_steps_16_fov_orig_trunc_1.0.mp4" type="video/mp4">
+            </video>
+            <div class="video-caption" style="width:100%;">
+                Ours with Forward-Facing Camera
+            </div>
+            </div>
+            <div class="video-section">
+            <video autoplay loop controls muted style="width:calc(90% - 10px); float: none;">
+                <source src="Videos/mead/vanilla/front_zoom_03_steps_16_fov_orig_trunc_1.0.mp4" type="video/mp4">
+            </video>
+            <div class="video-caption" style="width:100%;">
+                Ours with Forward-Facing Camera and Zoom Effect
+            </div>
+            </div>
+            <div class="video-section">
+            <video autoplay loop controls muted style="width:calc(90% - 10px); float: none;">
+                <source src="Videos/mead/vanilla/rotation_camera_steps_3_fov_orig_trunc_1.0.mp4" type="video/mp4">
+            </video>
+            <div class="video-caption" style="width:100%;">
+                Ours with Different Camera Positions
+            </div>
+            </div>
+            <div class="video-section">
+            <video autoplay loop controls muted style="width:calc(90% - 10px); float: none;">
+                <source src="Videos/mead/styleganv/styleganv_mead.mp4" type="video/mp4">
+            </video>
+            <div class="video-caption" style="width:100%;">
+                Samples Generated with StyleGAN-V
+            </div>
+            </div>
+
+            <div class="section-title">Results on TaiChi Dataset</div>
+            <div class="video-section">
+            <video autoplay loop controls muted>
+                <source src="Videos/taichi/vanilla_grid_rotation_camera_u_static_steps_16_fov_orig_trunc_1.0/taichi_vanilla_rotation_camera_u_static_steps_16_fov_orig_trunc_1.0.mp4" type="video/mp4">
+            </video>
+            <video autoplay loop controls muted>
+                <source src="Videos/taichi/vanilla_grid_rotation_camera_u_steps_16_fov_orig_trunc_1.0/taichi_vanilla_rotation_camera_u_steps_16_fov_orig_trunc_1.0.mp4" type="video/mp4">
+            </video>
+
+            <div class="video-caption">
+                Ours with Rotating Camera and Static Motion
+            </div>
+            <div class="video-caption">
+                Ours with Rotating Camera and Dynamic Motion
+            </div>
+            <video autoplay loop controls muted>
+                <source src="Videos/taichi/vanilla_grid_front_steps_16_fov_orig_trunc_1.0/taichi_vanilla_front_steps_16_fov_orig_trunc_1.0.mp4" type="video/mp4">
+            </video>
+            <video autoplay loop controls muted>
+                <source src="Videos/taichi/vanilla_grid_front_zoom_steps_16_fov_orig_trunc_1.0/taichi_vanilla_front_zoom_steps_16_fov_orig_trunc_1.0.mp4" type="video/mp4">
+            </video>
+            <div class="video-caption">
+                Ours with Forward-Facing Camera
+            </div>
+            <div class="video-caption">
+                Ours with Forward-Facing Camera and Zoom Effect
+            </div>
+            </div>
+
+            <div class="video-section">
+            <video autoplay loop controls muted style="width:calc(50% - 30px); padding-left: 15px; padding-right: 15px; float: none;">
+                <source src="Videos/taichi/digan/digan_taichi.mp4" type="video/mp4">
+            </video>
+            <div class="video-caption" style="width:100%;">
+                Samples Generated with DIGAN
+            </div>
+            </div>
+
+            <div class="section-title">Results on SkyTimelapse Dataset</div>
+
+            <div class="video-section">
+            <video autoplay loop controls muted style="width:calc(90% - 10px); float: none;">
+                <source src="Videos/sky/vanilla/front_steps_16_fov_orig_trunc_1.0/camera_rot_motion_steps_16_fov_orig_trunc_1.0.mp4" type="video/mp4">
+            </video>
+            <div class="video-caption" style="width:100%;">
+                Ours with Forward-Facing Camera
+            </div>
+            </div>
+
+            <div class="video-section">
+            <video autoplay loop controls muted style="width:calc(90% - 10px); float: none;">
+                <source src="Videos/sky/vanilla/rotation_camera_steps_16_fov_orig_trunc_1.0/camera_rot_steps_16_fov_orig_trunc_1.0.mp4" type="video/mp4">
+            </video>
+            <div class="video-caption" style="width:100%;">
+                Ours with Rotating Camera along First Axis and Static Motion
+            </div>
+            </div>
+
+            <div class="video-section">
+            <video autoplay loop controls muted style="width:calc(90% - 10px); float: none;">
+                <source src="Videos/sky/vanilla/rotation_camera_steps_16_fov_orig_trunc_1.0/camera_rot_motion_steps_16_fov_orig_trunc_1.0.mp4" type="video/mp4">
+            </video>
+            <div class="video-caption" style="width:100%;">
+                Ours with Rotating Camera along First Axis and Dynamic Motion
+            </div>
+            </div>
+
+            <div class="video-section">
+            <video autoplay loop controls muted style="width:calc(90% - 10px); float: none;">
+                <source src="Videos/sky/vanilla/rotation_camera_v_steps_16_fov_orig_trunc_1.0/camera_rot_steps_16_fov_orig_trunc_1.0.mp4" type="video/mp4">
+            </video>
+            <div class="video-caption" style="width:100%;">
+                Ours with Rotating Camera along Second Axis and Static Motion
+            </div>
+            </div>
+
+            <div class="video-section">
+            <video autoplay loop controls muted style="width:calc(90% - 10px); float: none;">
+                <source src="Videos/sky/vanilla/rotation_camera_v_steps_16_fov_orig_trunc_1.0/camera_rot_motion_steps_16_fov_orig_trunc_1.0.mp4" type="video/mp4">
+            </video>
+            <div class="video-caption" style="width:100%;">
+                Ours with Rotating Camera along Second Axis and Dynamic Motion
+            </div>
+            </div>
+
+            <div class="video-section">
+            <video autoplay loop controls muted style="width:calc(90% - 10px); float: none;">
+                <source src="Videos/sky/digan/digan_sky.mp4" type="video/mp4">
+            </video>
+            <div class="video-caption" style="width:100%;">
+                Samples Generated with DIGAN
+            </div>
+            </div>
+
+            <div class="video-section">
+            <video autoplay loop controls muted style="width:calc(90% - 10px); float: none;">
+                <source src="Videos/sky/styleganv/styleganv_sky.mp4" type="video/mp4">
+            </video>
+            <div class="video-caption" style="width:100%;">
+                Samples Generated with StyleGAN-V
+            </div>
+            </div>
+
+    </body>
+</html>
