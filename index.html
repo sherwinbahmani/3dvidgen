@@ -147,7 +147,7 @@
             
             <div class="section-title">Method</div>
             <div class="content">
-                <img src="Images/method.png">
+                <img src="Images/method_large.png" style="width:calc(65%); float: none;">
                 <p>The two main components of our 4D GAN framework are a time-conditioned neural scene generator and a time-aware discriminator. Our generator networks take as input two independent noise vectors, \(\bf{m}\) and \(\bf{z}\), that respectively modulate the motion and the content of the 4D fields. To render an image at a specific time step \({t}\), we sample the camera extrinsics according to dataset-dependent distribution and conduct volume rendering through the time-conditioned radiance and density fields. Our time-aware discriminator measures the realism of a pair of frames, given their time difference, to promote plausible 3D video generation.</p>
                        
 
@@ -225,7 +225,6 @@
             </video>
             <div class="video-caption" style="width:100%;">
                 Samples Generated with MoCoGAN-HD
-            </div>
             </div>
 
             <div class="video-section">
@@ -383,6 +382,11 @@
                 Samples Generated with StyleGAN-V
             </div>
             </div>
+        <div class="section-title">Notes</div>
+        <div class="content">
+            <p>
+                For FaceForensics and SkyTimelapse comparisons to MoCoGAN-HD, DIGAN, and StyleGAN-V we use generated results provided on the <a href=https://universome.github.io/stylegan-v>StyleGAN-V website</a>.
+            </p>
 
     </body>
 </html>
